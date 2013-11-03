@@ -4,7 +4,10 @@ A simple example of importing WoW Item Data via the public Item API at http://bl
 
 NOTE: I changed the default Couchbase elasticsearch transport plugin so the _source on any new indices would also include doc.* (which avoids the "roundtrip" back to Couchbase)
 
-The outline for this project was:
+# Demo
+Check it out at: http://rdp.arcaneorb.com:8093/ (if I have chosen to keep it running)
+
+# Outline 
 
 1) Download all Item Static Data via
 http://us.battle.net/api/wow/item/{id}
