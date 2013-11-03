@@ -38,7 +38,7 @@ func init() {
 
 func main() {
 
-	fmt.Println("END.  This file will produce keys that can be parsed by the Couchbase-ElasticSearch Transport")
+	fmt.Println("END.  This file will produce keys that canNOT be parsed by the Couchbase-ElasticSearch Transport")
 	os.Exit(2)
 
 	fmt.Printf("Starting Import from %d to %d\n", start_id, end_id)
