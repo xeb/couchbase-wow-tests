@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>WoW Items: Couchbase and ElasticSearch Sample</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="http://getbootstrap.com/2.3.2/assets/css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 20px;
+        padding-bottom: 60px;
+      }
+
+      /* Custom container */
+      .container {
+        margin: 0 auto;
+        max-width: 1000px;
+      }
+      .container > hr {
+        margin: 60px 0;
+      }
+
+      /* Main marketing message and sign up button */
+      .jumbotron {
+        margin: 0px 0;
+        text-align: center;
+      }
+      .jumbotron h1 {
+        font-size: 50px;
+        line-height: 1;
+      }
+      .jumbotron .lead {
+        font-size: 24px;
+        line-height: 1.25;
+      }
+      .jumbotron .btn {
+        font-size: 21px;
+        padding: 14px 24px;
+      }
+
+      table {
+        width:100%;
+        margin-top:20px;
+      }
+      table th {
+        text-align: left !important;
+      }
+
+      table th, table td {
+        vertical-align: top;
+      }
+      tr:nth-child(odd)   { background-color:#fff; }
+      tr:nth-child(even)    { background-color:#eee; }
+
+      /* Supporting marketing content */
+      .marketing {
+        margin: 60px 0;
+      }
+      .marketing p + h4 {
+        margin-top: 28px;
+      }
+
+      .search .searchbox, .search select {
+        margin-bottom: 0px !important;
+      }
+
+      .searchbox {
+        width: 480px;
+      }
+
+      /* Customize the navbar links to be fill the entire space of the .navbar */
+      .navbar .navbar-inner {
+        padding: 0;
+      }
+      .navbar .nav {
+        margin: 0;
+        display: table;
+        width: 100%;
+      }
+      .navbar .nav li {
+        display: table-cell;
+        width: 1%;
+        float: none;
+      }
+      .navbar .nav li a {
+        font-weight: bold;
+        text-align: center;
+        border-left: 1px solid rgba(255,255,255,.75);
+        border-right: 1px solid rgba(0,0,0,.1);
+      }
+      .navbar .nav li:first-child a {
+        border-left: 0;
+        border-radius: 3px 0 0 3px;
+      }
+      .navbar .nav li:last-child a {
+        border-right: 0;
+        border-radius: 0 3px 3px 0;
+      }
+    </style>
+    <link href="http://getbootstrap.com/2.3.2/assets/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://getbootstrap.com/2.3.2/assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="masthead">
+        <h3 class="muted">WoW Items via Couchbase &amp; ElasticSearch</h3>
+        <div class="navbar">
+          <div class="navbar-inner">
+            <div class="container">
+              <ul class="nav">
+                <li class="active"><a href="/">Sample Searches</a></li>
+                <li><a href="http://rdp.arcaneorb.com:8091/index.html">Couchbase Admin</a></li>
+                <li><a href="http://rdp.arcaneorb.com:9201/_plugin/head">Elastic Search Head</a></li>
+              </ul>
+            </div>
+          </div>
+        </div><!-- /.navbar -->
+      </div>
+
+
+      <div class="container search">
+        <form action="/results" method="GET">
+          <input type="text" name="q" value="{{.Query}}" placeholder="Use '*' for wildcards" class="searchbox" />
+          <!--
+          <select name="t">
+            <option>Results from ES</option>
+            <option>Results from Couchbase</option>
+          </select>
+          -->
+          <input type="submit" value="Search" class="btn" />
+        </form>
+      </div>
+
+      {{if .Query}}
+      <!-- Jumbotron -->
+      <div class="container">
+        <h1>Search Results</h1>
+        <strong>Took:</strong> {{.SearchResults.Took}}ms<br/>
+        <strong>Total Found:</strong> {{.SearchResults.Hits.Total}}
+
+        <table>
+          <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th width="15%">Description</th>
+          </tr>
+          {{range $row := .WoWItems }}
+            <tr>
+              <td><a href="http://rdp.arcaneorb.com:8091/index.html#sec=documents&amp;bucketName=wowitems&amp;documentsPageNumber=0&amp;docId={{$row.Meta.Id}}">{{$row.Doc.Id}}</a></td>
+              <td>{{$row.Doc.Name}}</td>
+              <td>{{$row.Doc.Description}}</td>
+            </tr>
+          {{end}}
+        </table>
+
+      </div>
+      {{ else }}
+      <!-- Jumbotron -->
+      <div class="jumbotron">
+      	<img src="http://webpages.scu.edu/ftp/Mreed/images/wow-logo1.jpg" width="320" />
+        <h1>WoW Item Search</h1>
+        <p class="lead">Below are some examples of various searches for WoW Items.  From using Observe to get CAS values for frequently changing documents, using ElasticSearch to query item properties, and pulling results directly form ElasticSearch without a roundtrip to Couchbase.</p>
+        <a class="btn btn-large btn-success" href="/results?q=Sword">Search for 'Sword'!</a>
+      </div>
+      {{ end }}
+
+      <hr>
+
+      <!-- Example row of columns -->
+      <div class="row-fluid">
+        <div class="span4">
+          <h2>Heading</h2>
+          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+          <p><a class="btn" href="#">View details &raquo;</a></p>
+        </div>
+        <div class="span4">
+          <h2>Heading</h2>
+          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+          <p><a class="btn" href="#">View details &raquo;</a></p>
+       </div>
+        <div class="span4">
+          <h2>Heading</h2>
+          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa.</p>
+          <p><a class="btn" href="#">View details &raquo;</a></p>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="footer">
+        <p>&copy; Mark Kockerbeck 2013</p>
+      </div>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="http://getbootstrap.com/2.3.2/assets/js/jquery.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-transition.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-alert.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-modal.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-dropdown.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-tab.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-tooltip.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-popover.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-button.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-collapse.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-carousel.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-typeahead.js"></script>
+
+  </body>
+</html>
