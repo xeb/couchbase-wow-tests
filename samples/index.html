@@ -77,6 +77,9 @@
         width: 480px;
       }
 
+      .cachestatus { font-weight: bold; }
+      .cachestatus.success { color: #00AA00; }
+
       /* Customize the navbar links to be fill the entire space of the .navbar */
       .navbar .navbar-inner {
         padding: 0;
@@ -181,6 +184,10 @@
             <th>Description</th>
             <td>{{.CacheDoc.Description}}</td>
           </tr>
+          <tr>
+            <th>Got from Cache?</th>
+            <td class="cachestatus {{if .CacheDoc.CacheHit}}success{{end}}">{{if .CacheDoc.CacheHit}}Yes!{{else}}No{{end}}</td>
+          </tr>
         </table>
         <br/>
         <a class="btn btn-medium btn-success" href="/cas?id={{.CacheDoc.Id}}">Get Again</a>&nbsp;&nbsp;&nbsp;
@@ -190,6 +197,37 @@
         <em>No doc found</em>
         {{end}}
 
+        <br/>
+        <br/>
+        <br/>
+        <pre>
+
+type CacheItem struct {
+  LastCas uint64
+  Doc     *WoWItem
+}
+
+var cache map[string]*CacheItem = make(map[string]*CacheItem)
+
+func GetLocalCache(key string) *WoWItem {
+  o, e := casb.Observe(key) // we're going to do this no matter what
+  if e != nil {
+    return nil
+  }
+  if ci, hit := cache[key]; hit &amp;&amp; ci.LastCas == o.Cas {
+    return ci.Doc
+  }
+
+  var wi WoWItem
+  e = casb.Get(key, &amp;wi)
+  if e != nil {
+    return nil
+  }
+
+  cache[key] = &amp;CacheItem{LastCas: o.Cas, Doc: &amp;wi}
+  return &amp;wi
+}
+        </pre>
       </div>
       {{ end }}
 

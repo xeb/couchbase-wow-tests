@@ -64,6 +64,7 @@ type WoWItem struct {
 	Description string `json:"description"`
 	RawJson     string
 	CasValue    uint64
+	CacheHit    bool
 }
 
 func Start(root string) {
@@ -214,6 +215,7 @@ func GetLocalCache(key string) *WoWItem {
 	}
 	if ci, hit := cache[key]; hit && ci.LastCas == o.Cas {
 		fmt.Printf("CACHE HIT! %s\n", key)
+		ci.Doc.CacheHit = true
 		return ci.Doc
 	}
 
