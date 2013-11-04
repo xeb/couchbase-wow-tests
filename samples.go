@@ -44,6 +44,7 @@ type Results struct {
 	Duration      time.Duration
 	CacheDoc      *WoWItem
 	Size          int
+	Id            int
 }
 
 func (r Results) HasCacheDoc() bool {
@@ -103,7 +104,11 @@ func handleResultsRequest(w http.ResponseWriter, urlString string) {
 		q = u.Query().Get("q")
 		s := u.Query().Get("search")
 		sizeStr := u.Query().Get("size")
-		size, _ = strconv.Atoi(sizeStr)
+
+		if sizeStr != "" {
+			size, _ = strconv.Atoi(sizeStr)
+		}
+
 		fromCouch = strings.HasSuffix(s, "Couchbase")
 	}
 	t := template.New("index.html")
@@ -221,7 +226,7 @@ func handleCasRequest(w http.ResponseWriter, urlString string) {
 	}
 
 	ty, _ := strconv.Atoi(q)
-	r := Results{CasQueryType: ty, IsCas: true}
+	r := Results{CasQueryType: ty, IsCas: true, Id: id}
 
 	if r.CasQueryType == 2 {
 		CreateRandDoc(id)

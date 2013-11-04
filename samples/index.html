@@ -193,9 +193,14 @@
         <br/>
         <a class="btn btn-medium btn-success" href="/cas?id={{.CacheDoc.Id}}">Get Again</a>&nbsp;&nbsp;&nbsp;
 
-        <a class="btn btn-medium btn-warning" href="/cas?id={{.CacheDoc.Id}}&amp;qt=2">Reset Doc</a>
+        <a class="btn btn-medium btn-warning" href="/cas?id={{.CacheDoc.Id}}&amp;qt=2">Reset Doc</a>&nbsp;&nbsp;&nbsp;
+
+        <a class="btn btn-medium btn-danger" href="http://rdp.arcaneorb.com:8091/index.html#sec=documents&amp;bucketName=wowitems-castest&amp;documentsPageNumber=0&amp;docId=item_{{.CacheDoc.Id}}">Edit Doc</a>
         {{ else }}
         <em>No doc found</em>
+
+        <a class="btn btn-medium btn-info" href="/cas?id={{.Id}}&amp;qt=2">Create Doc</a>
+
         {{end}}
 
         <br/>
