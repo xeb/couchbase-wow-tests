@@ -8,9 +8,11 @@ import (
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -40,6 +42,11 @@ type Results struct {
 	IsSearch      bool
 	IsCas         bool
 	Duration      time.Duration
+	CacheDoc      *WoWItem
+}
+
+func (r Results) HasCacheDoc() bool {
+	return r.CacheDoc != nil && r.CacheDoc.Id > 0
 }
 
 type WoWItemDoc struct {
@@ -56,6 +63,7 @@ type WoWItem struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	RawJson     string
+	CasValue    uint64
 }
 
 func Start(root string) {
@@ -76,7 +84,6 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	urlString := r.URL.String()
 	switch {
 	case strings.HasPrefix(urlString, "/cas"):
-		fmt.Printf("Handling CAS for %s", urlString)
 		handleCasRequest(w, urlString)
 	default:
 		handleResultsRequest(w, urlString)
@@ -152,13 +159,75 @@ func handleCasRequest(w http.ResponseWriter, urlString string) {
 		return
 	}
 
-	r := Results{CasQueryType: 1, IsCas: true}
+	var q string = ""
+	var id int
+
+	if urlString != "" {
+		u, _ := url.Parse(urlString)
+		q = u.Query().Get("qt")
+		id, _ = strconv.Atoi(u.Query().Get("id"))
+	}
+
+	if id == 0 {
+		id = 1
+	}
+
+	ty, _ := strconv.Atoi(q)
+	r := Results{CasQueryType: ty, IsCas: true}
+
+	if r.CasQueryType == 2 {
+		CreateRandDoc(id)
+	}
+
+	doc := GetLocalCache(fmt.Sprintf("item_%d", id))
+	r.CacheDoc = doc
 
 	err = t.Execute(w, r)
 	if err != nil {
 		fmt.Fprintf(w, "ERROR %s", err)
 		return
 	}
+}
+
+var r *rand.Rand = rand.New(rand.NewSource(99))
+
+func CreateRandDoc(id int) {
+	fmt.Printf("Creating item_%d\n", id)
+	key := fmt.Sprintf("item_%d", id)
+	name := fmt.Sprintf("Random Name %d", r.Int())
+	desc := fmt.Sprintf("Random Description %d", r.Int63())
+	wi := &WoWItem{Id: id, Name: name, Description: desc}
+	casb.Set(key, -1, wi)
+}
+
+type CacheItem struct {
+	LastCas uint64
+	Doc     *WoWItem
+}
+
+var cache map[string]*CacheItem = make(map[string]*CacheItem)
+
+func GetLocalCache(key string) *WoWItem {
+	o, e := casb.Observe(key) // we're going to do this no matter what
+	if e != nil {
+		fmt.Printf("--> cache miss / Observe error on key %s err is %s", key, e)
+	}
+	if ci, hit := cache[key]; hit && ci.LastCas == o.Cas {
+		fmt.Printf("CACHE HIT! %s\n", key)
+		return ci.Doc
+	}
+
+	fmt.Printf("--> cache miss %s\n", key)
+
+	var wi WoWItem
+	e = casb.Get(key, &wi)
+	if e != nil {
+		fmt.Printf("ERROR %s\n", e)
+		return nil
+	}
+	wi.CasValue = o.Cas
+	cache[key] = &CacheItem{LastCas: o.Cas, Doc: &wi}
+	return &wi
 }
 
 func Connect(n string) (bucket *couchbase.Bucket) {

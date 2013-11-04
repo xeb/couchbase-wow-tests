@@ -50,14 +50,17 @@
         text-align: left !important;
       }
 
-      .results table th, .results table td {
+      .results table th, .results table td, .cas table th, .cas table td {
         vertical-align: top;
         padding: 15px;
       }
       .results tr:nth-child(odd)   { background-color:#666; }
-      .results tr:nth-child(even)    { background-color:#777; }
+      .results tr:nth-child(even)    { background-color:#333; }
       .results tr td, tr th { color: #fff;}
       .results tr.top { background-color: #000;}
+      
+      .cas tr th { text-align: left !important; color: #666;}
+
       /* Supporting marketing content */
       .marketing {
         margin: 60px 0;
@@ -158,9 +161,35 @@
       {{ end }}
       
       {{ if .IsCas }}
-      <div class="container cas">
-      	1) Pull the CAS Value
-      	2) Reset the Doc
+        <div class="container cas">
+      	{{ if .HasCacheDoc }}
+        <h2>Doc Found!</h2>
+        <table class="cas">
+          <tr>
+            <th>ID</th>
+            <td>{{.CacheDoc.Id}}</td>
+          </tr>
+          <tr>
+            <th>CAS Value</th>
+            <td>{{.CacheDoc.CasValue}}</td>
+          </tr>
+          <tr>
+            <th>Name</th>
+            <td>{{.CacheDoc.Name}}</td>
+          </tr>
+          <tr>
+            <th>Description</th>
+            <td>{{.CacheDoc.Description}}</td>
+          </tr>
+        </table>
+        <br/>
+        <a class="btn btn-medium btn-success" href="/cas?id={{.CacheDoc.Id}}">Get Again</a>&nbsp;&nbsp;&nbsp;
+
+        <a class="btn btn-medium btn-warning" href="/cas?id={{.CacheDoc.Id}}&amp;qt=2">Reset Doc</a>
+        {{ else }}
+        <em>No doc found</em>
+        {{end}}
+
       </div>
       {{ end }}
 
@@ -175,12 +204,14 @@
           <tr class="top">
             <th>Id</th>
             <th>Name</th>
+            <th>WoW Head</th>
             <th width="15%">Description</th>
           </tr>
           {{range $row := .WoWItems }}
             <tr>
-              <td><a rel="item={{$row.Doc.Id}}" href="http://rdp.arcaneorb.com:8091/index.html#sec=documents&amp;bucketName=wowitems&amp;documentsPageNumber=0&amp;docId={{$row.Meta.Id}}">{{$row.Doc.Id}}</a></td>
+              <td><a href="http://rdp.arcaneorb.com:8091/index.html#sec=documents&amp;bucketName=wowitems&amp;documentsPageNumber=0&amp;docId={{$row.Meta.Id}}">{{$row.Doc.Id}}</a></td>
               <td>{{$row.Doc.Name}}</td>
+              <td><a rel="item={{$row.Doc.Id}}" href="#">&nbsp;</a></td>
               <td>{{$row.Doc.Description}}</td>
             </tr>
           {{end}}
