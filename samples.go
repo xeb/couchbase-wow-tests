@@ -43,6 +43,7 @@ type Results struct {
 	IsCas         bool
 	Duration      time.Duration
 	CacheDoc      *WoWItem
+	Size          int
 }
 
 func (r Results) HasCacheDoc() bool {
@@ -94,10 +95,16 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 func handleResultsRequest(w http.ResponseWriter, urlString string) {
 	t0 := time.Now()
 	var q string = ""
+	var fromCouch bool = false
+	var size int = 10
 
 	if urlString != "" {
 		u, _ := url.Parse(urlString)
 		q = u.Query().Get("q")
+		s := u.Query().Get("search")
+		sizeStr := u.Query().Get("size")
+		size, _ = strconv.Atoi(sizeStr)
+		fromCouch = strings.HasSuffix(s, "Couchbase")
 	}
 	t := template.New("index.html")
 	t, err := t.ParseFiles(templatePath)
@@ -105,10 +112,11 @@ func handleResultsRequest(w http.ResponseWriter, urlString string) {
 		fmt.Fprintf(w, "ERROR %s", err)
 		return
 	}
-	r := Results{Query: q}
+	r := Results{Query: q, Size: size}
 
 	if q != "" {
 		searchJson := `{
+			"size" : ` + fmt.Sprintf("%d", size) + `,
 	        "query" : {
 	            "bool" : { "must" : [
 	            	{
@@ -133,12 +141,17 @@ func handleResultsRequest(w http.ResponseWriter, urlString string) {
 			if err != nil {
 				fmt.Printf("ERROR %s", err)
 			}
-			fmt.Printf("%s\n", itm)
+			// fmt.Printf("%s\n", itm)
 			itm.Doc.RawJson = string(hit.Source)
 			wowItems = append(wowItems, &itm)
 		}
 
-		r.WoWItems = wowItems
+		if fromCouch {
+			r.WoWItems = GetWoWItems(wowItems)
+		} else {
+			r.WoWItems = wowItems
+		}
+
 		r.IsSearch = true
 		// fmt.Printf("Found %s\n", len(out.Hits.Hits))
 	} else {
@@ -150,6 +163,40 @@ func handleResultsRequest(w http.ResponseWriter, urlString string) {
 		fmt.Fprintf(w, "ERROR %s", err)
 		return
 	}
+}
+
+func GetWoWItems(wis []*WoWItemDoc) (wi []*WoWItemDoc) { // this is a very silly thing to do
+	keys := make([]string, 0)
+	for _, itm := range wis {
+		keys = append(keys, itm.Meta.Id)
+	}
+	// fmt.Printf("All Keys %s", keys)
+
+	results := bucket.GetBulk(keys)
+
+	nwi := make(map[int]*WoWItem, 0)
+	for _, itm := range results {
+		dec := json.NewDecoder(bytes.NewReader(itm.Body))
+		var witm WoWItem
+		err := dec.Decode(&witm)
+		if err != nil {
+			fmt.Printf("ERROR %s", err)
+		}
+
+		fmt.Printf("Decoded ID %d, Name %s\n", witm.Id, witm.Name)
+		nwi[witm.Id] = &witm
+	}
+
+	for _, itm := range wis {
+		if w, ok := nwi[itm.Doc.Id]; ok {
+
+			// remap latest & greatest Couchbase values
+			itm.Doc.Name = w.Name
+			itm.Doc.Description = w.Description
+		}
+	}
+
+	return wis
 }
 
 func handleCasRequest(w http.ResponseWriter, urlString string) {

@@ -60,7 +60,7 @@
       .results tr.top { background-color: #000;}
       
       .cas tr th { text-align: left !important; color: #666;}
-
+      .search select { width: 100px;}
       /* Supporting marketing content */
       .marketing {
         margin: 60px 0;
@@ -143,13 +143,14 @@
       <div class="container search">
         <form action="/results" method="GET">
           <input type="text" name="q" value="{{.Query}}" placeholder="Use '*' for wildcards" class="searchbox" />
-          <!--
-          <select name="t">
-            <option>Results from ES</option>
-            <option>Results from Couchbase</option>
+          <select name="size">
+            <option value="10">10 rows</option>
+            <option value="25">25 rows</option>
+            <option value="50">50 rows</option>
+            <option value="100">100 rows</option>
           </select>
-          -->
-          <input type="submit" value="Search" class="btn" />
+          <input type="submit" value="Search, source ES" name="search" class="btn" />
+          <input type="submit" value="Search, source Couchbase" name="search" class="btn" />
         </form>
       </div>
       {{ end }}
@@ -158,7 +159,7 @@
       <div class="jumbotron">
       	<img src="http://webpages.scu.edu/ftp/Mreed/images/wow-logo1.jpg" width="320" />
         <h1>WoW Item Search</h1>
-        <p class="lead">Below are some examples of various searches for WoW Items.  From using Observe to get CAS values for frequently changing documents, using ElasticSearch to query item properties, and pulling results directly form ElasticSearch without a roundtrip to Couchbase.</p>
+        <p class="lead">Below are some examples of various searches for WoW Items.  From using Observe to get CAS values for frequently changing documents, using ElasticSearch to query item properties, and pulling results directly from ElasticSearch without a roundtrip to Couchbase.</p>
         <a class="btn btn-large btn-success" href="/results?q=Sword">Search for 'Sword'!</a>
       </div>
       {{ end }}
@@ -258,26 +259,21 @@ func GetLocalCache(key string) *WoWItem {
       </div>
       {{ end }}
 
+      {{if .IsHome}}
       <hr>
-
-      <!-- Example row of columns -->
-      <!--<div class="row-fluid">
-        <div class="span4">
-          <h2>Heading</h2>
-          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-          <p><a class="btn" href="#">View details &raquo;</a></p>
+      <div class="row-fluid">
+        <div class="span6">
+          <h2>CAS Cache</h2>
+          <p>A sample local cache that uses the CAS value of a document's meta data to know when to get a newer version.  Overall the total operation appears to be extremely inexpensive to perform since Couchbase will store all meta information in RAM.</p>
+          <p><a class="btn" href="/cas">Get Doc &raquo;</a></p>
         </div>
-        <div class="span4">
-          <h2>Heading</h2>
-          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-          <p><a class="btn" href="#">View details &raquo;</a></p>
+        <div class="span6">
+          <h2>ElasticSearch Source</h2>
+          <p>You can use ElasticSearch to store any data you desire from the source document.  Decoupling the index values and the source values can be useful.  But in times when eventual consistent is just fine, modify the ES index template &amp; save yourself a round-trip!</p>
+          <p><a class="btn" href="/results?q=search">Try it Out&raquo;</a></p>
        </div>
-        <div class="span4">
-          <h2>Heading</h2>
-          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa.</p>
-          <p><a class="btn" href="#">View details &raquo;</a></p>
-        </div>
-      </div>-->
+      </div>
+      {{ end }}
 
       <hr>
 
