@@ -42,20 +42,22 @@
         padding: 14px 24px;
       }
 
-      table {
+      .results table {
         width:100%;
         margin-top:20px;
       }
-      table th {
+      .results table th {
         text-align: left !important;
       }
 
-      table th, table td {
+      .results table th, .results table td {
         vertical-align: top;
+        padding: 15px;
       }
-      tr:nth-child(odd)   { background-color:#fff; }
-      tr:nth-child(even)    { background-color:#eee; }
-
+      .results tr:nth-child(odd)   { background-color:#666; }
+      .results tr:nth-child(even)    { background-color:#777; }
+      .results tr td, tr th { color: #fff;}
+      .results tr.top { background-color: #000;}
       /* Supporting marketing content */
       .marketing {
         margin: 60px 0;
@@ -107,11 +109,10 @@
     <!--[if lt IE 9]>
       <script src="http://getbootstrap.com/2.3.2/assets/js/html5shiv.js"></script>
     <![endif]-->
-
+<script type="text/javascript" src="http://static.wowhead.com/widgets/power.js"></script><script>var wowhead_tooltips = { "colorlinks": true, "iconizelinks": true, "renamelinks": true }</script>
   </head>
 
   <body>
-
     <div class="container">
 
       <div class="masthead">
@@ -120,7 +121,9 @@
           <div class="navbar-inner">
             <div class="container">
               <ul class="nav">
-                <li class="active"><a href="/">Sample Searches</a></li>
+                <li class="{{if .IsHome}}active{{end}}"><a href="/">Home</a></li>
+                <li class="{{if .IsSearch}}active{{end}}"><a href="/results?q=sword">Sample Searches</a></li>
+                <li class="{{if .IsCas}}active{{end}}"><a href="/cas">CAS Cache</a></li>
                 <li><a href="http://rdp.arcaneorb.com:8091/index.html">Couchbase Admin</a></li>
                 <li><a href="http://rdp.arcaneorb.com:9201/_plugin/head">Elastic Search Head</a></li>
               </ul>
@@ -130,6 +133,7 @@
       </div>
 
 
+      {{ if .IsSearch }}
       <div class="container search">
         <form action="/results" method="GET">
           <input type="text" name="q" value="{{.Query}}" placeholder="Use '*' for wildcards" class="searchbox" />
@@ -142,31 +146,8 @@
           <input type="submit" value="Search" class="btn" />
         </form>
       </div>
-
-      {{if .Query}}
-      <!-- Jumbotron -->
-      <div class="container">
-        <h1>Search Results</h1>
-        <strong>Took:</strong> {{.SearchResults.Took}}ms<br/>
-        <strong>Total Found:</strong> {{.SearchResults.Hits.Total}}
-
-        <table>
-          <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th width="15%">Description</th>
-          </tr>
-          {{range $row := .WoWItems }}
-            <tr>
-              <td><a href="http://rdp.arcaneorb.com:8091/index.html#sec=documents&amp;bucketName=wowitems&amp;documentsPageNumber=0&amp;docId={{$row.Meta.Id}}">{{$row.Doc.Id}}</a></td>
-              <td>{{$row.Doc.Name}}</td>
-              <td>{{$row.Doc.Description}}</td>
-            </tr>
-          {{end}}
-        </table>
-
-      </div>
-      {{ else }}
+      {{ end }}
+      {{ if .IsHome }}
       <!-- Jumbotron -->
       <div class="jumbotron">
       	<img src="http://webpages.scu.edu/ftp/Mreed/images/wow-logo1.jpg" width="320" />
@@ -175,11 +156,43 @@
         <a class="btn btn-large btn-success" href="/results?q=Sword">Search for 'Sword'!</a>
       </div>
       {{ end }}
+      
+      {{ if .IsCas }}
+      <div class="container cas">
+      	1) Pull the CAS Value
+      	2) Reset the Doc
+      </div>
+      {{ end }}
+
+      {{if .Query}}
+      <!-- Jumbotron -->
+      <div class="container results">
+        <h1>Search Results</h1>
+        <strong>Took:</strong> {{.SearchResults.Took}}ms<br/>
+        <strong>Total Found:</strong> {{.SearchResults.Hits.Total}}
+
+        <table>
+          <tr class="top">
+            <th>Id</th>
+            <th>Name</th>
+            <th width="15%">Description</th>
+          </tr>
+          {{range $row := .WoWItems }}
+            <tr>
+              <td><a rel="item={{$row.Doc.Id}}" href="http://rdp.arcaneorb.com:8091/index.html#sec=documents&amp;bucketName=wowitems&amp;documentsPageNumber=0&amp;docId={{$row.Meta.Id}}">{{$row.Doc.Id}}</a></td>
+              <td>{{$row.Doc.Name}}</td>
+              <td>{{$row.Doc.Description}}</td>
+            </tr>
+          {{end}}
+        </table>
+
+      </div>
+      {{ end }}
 
       <hr>
 
       <!-- Example row of columns -->
-      <div class="row-fluid">
+      <!--<div class="row-fluid">
         <div class="span4">
           <h2>Heading</h2>
           <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
@@ -195,12 +208,12 @@
           <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa.</p>
           <p><a class="btn" href="#">View details &raquo;</a></p>
         </div>
-      </div>
+      </div>-->
 
       <hr>
 
       <div class="footer">
-        <p>&copy; Mark Kockerbeck 2013</p>
+        <p>Rendered Page in {{.Duration}}&nbsp;-&nbsp;&copy; Mark Kockerbeck 2013</p>
       </div>
 
     </div> <!-- /container -->

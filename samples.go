@@ -11,18 +11,22 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
+	"time"
 )
 
 var port int = 8093
 var templatePath string
 var contentMux = http.NewServeMux()
 var bucket *couchbase.Bucket
+var casb *couchbase.Bucket
 
 func main() {
 	fmt.Println("Starting server")
 
 	api.Domain = "192.168.1.159"
 	bucket = Connect("wowitems")
+	casb = Connect("wowitems-castest")
 
 	Start("./")
 }
@@ -31,6 +35,11 @@ type Results struct {
 	Query         string
 	SearchResults *core.SearchResult
 	WoWItems      []*WoWItemDoc
+	CasQueryType  int
+	IsHome        bool
+	IsSearch      bool
+	IsCas         bool
+	Duration      time.Duration
 }
 
 type WoWItemDoc struct {
@@ -65,10 +74,17 @@ func Start(root string) {
 func handleRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Handling request %s\n", r.URL)
 	urlString := r.URL.String()
-	handleResultsRequest(w, urlString)
+	switch {
+	case strings.HasPrefix(urlString, "/cas"):
+		fmt.Printf("Handling CAS for %s", urlString)
+		handleCasRequest(w, urlString)
+	default:
+		handleResultsRequest(w, urlString)
+	}
 }
 
 func handleResultsRequest(w http.ResponseWriter, urlString string) {
+	t0 := time.Now()
 	var q string = ""
 
 	if urlString != "" {
@@ -82,9 +98,6 @@ func handleResultsRequest(w http.ResponseWriter, urlString string) {
 		return
 	}
 	r := Results{Query: q}
-
-	// Query ElasticSearch
-	// results := Search("wowitems")
 
 	if q != "" {
 		searchJson := `{
@@ -118,8 +131,29 @@ func handleResultsRequest(w http.ResponseWriter, urlString string) {
 		}
 
 		r.WoWItems = wowItems
+		r.IsSearch = true
 		// fmt.Printf("Found %s\n", len(out.Hits.Hits))
+	} else {
+		r.IsHome = true
 	}
+	r.Duration = time.Now().Sub(t0)
+	err = t.Execute(w, r)
+	if err != nil {
+		fmt.Fprintf(w, "ERROR %s", err)
+		return
+	}
+}
+
+func handleCasRequest(w http.ResponseWriter, urlString string) {
+	t := template.New("index.html")
+	t, err := t.ParseFiles(templatePath)
+	if err != nil {
+		fmt.Fprintf(w, "ERROR %s", err)
+		return
+	}
+
+	r := Results{CasQueryType: 1, IsCas: true}
+
 	err = t.Execute(w, r)
 	if err != nil {
 		fmt.Fprintf(w, "ERROR %s", err)

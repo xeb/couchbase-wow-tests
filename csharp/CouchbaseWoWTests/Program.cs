@@ -11,8 +11,8 @@ namespace CouchbaseWoWTests
 {
 	public class MainClass
 	{
-		private static int _startId = 12524;
-		private static int _endId = 40010;
+		private static int _startId = 40000;
+		private static int _endId = 80010;
 		private static string _baseUrl = "http://eu.battle.net/api/wow/item/{0}";
 
 		private static CouchbaseClient _client;
