@@ -1,0 +1,12 @@
+{>"layouts/master" /}
+
+{<title}WoWItems on ElasticSearch{/title}
+
+{<body}
+
+	  <!-- Jumbotron -->
+	  <div class="jumbotron">
+	   <h1>Indexing new data</h1>
+    </div>
+
+{/body}

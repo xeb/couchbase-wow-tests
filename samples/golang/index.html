@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>WoW Items: Couchbase and ElasticSearch Sample</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="http://getbootstrap.com/2.3.2/assets/css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 20px;
+        padding-bottom: 60px;
+      }
+
+      /* Custom container */
+      .container {
+        margin: 0 auto;
+        max-width: 1000px;
+      }
+      .container > hr {
+        margin: 60px 0;
+      }
+
+      /* Main marketing message and sign up button */
+      .jumbotron {
+        margin: 0px 0;
+        text-align: center;
+      }
+      .jumbotron h1 {
+        font-size: 50px;
+        line-height: 1;
+      }
+      .jumbotron .lead {
+        font-size: 24px;
+        line-height: 1.25;
+      }
+      .jumbotron .btn {
+        font-size: 21px;
+        padding: 14px 24px;
+      }
+
+      .results table {
+        width:100%;
+        margin-top:20px;
+      }
+      .results table th {
+        text-align: left !important;
+      }
+
+      .results table th, .results table td, .cas table th, .cas table td {
+        vertical-align: top;
+        padding: 15px;
+      }
+      .results tr:nth-child(odd)   { background-color:#666; }
+      .results tr:nth-child(even)    { background-color:#333; }
+      .results tr td, tr th { color: #fff;}
+      .results tr.top { background-color: #000;}
+      
+      .cas tr th { text-align: left !important; color: #666;}
+      .search select { width: 100px;}
+      /* Supporting marketing content */
+      .marketing {
+        margin: 60px 0;
+      }
+      .marketing p + h4 {
+        margin-top: 28px;
+      }
+
+      .search .searchbox, .search select {
+        margin-bottom: 0px !important;
+      }
+
+      .searchbox {
+        width: 480px;
+      }
+
+      .cachestatus { font-weight: bold; }
+      .cachestatus.success { color: #00AA00; }
+
+      /* Customize the navbar links to be fill the entire space of the .navbar */
+      .navbar .navbar-inner {
+        padding: 0;
+      }
+      .navbar .nav {
+        margin: 0;
+        display: table;
+        width: 100%;
+      }
+      .navbar .nav li {
+        display: table-cell;
+        width: 1%;
+        float: none;
+      }
+      .navbar .nav li a {
+        font-weight: bold;
+        text-align: center;
+        border-left: 1px solid rgba(255,255,255,.75);
+        border-right: 1px solid rgba(0,0,0,.1);
+      }
+      .navbar .nav li:first-child a {
+        border-left: 0;
+        border-radius: 3px 0 0 3px;
+      }
+      .navbar .nav li:last-child a {
+        border-right: 0;
+        border-radius: 0 3px 3px 0;
+      }
+    </style>
+    <link href="http://getbootstrap.com/2.3.2/assets/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://getbootstrap.com/2.3.2/assets/js/html5shiv.js"></script>
+    <![endif]-->
+<script type="text/javascript" src="http://static.wowhead.com/widgets/power.js"></script>
+<script>/*var wowhead_tooltips = { "colorlinks": true, "iconizelinks": true, "renamelinks": true }*/</script>
+  </head>
+
+  <body>
+    <div class="container">
+
+      <div class="masthead">
+        <h3 class="muted">WoW Items via Couchbase &amp; ElasticSearch</h3>
+        <div class="navbar">
+          <div class="navbar-inner">
+            <div class="container">
+              <ul class="nav">
+                <li class="{{if .IsHome}}active{{end}}"><a href="/">Home</a></li>
+                <li class="{{if .IsSearch}}active{{end}}"><a href="/results?q=sword">Sample Searches</a></li>
+                <li class="{{if .IsCas}}active{{end}}"><a href="/cas">CAS Cache</a></li>
+                <li><a href="http://rdp.arcaneorb.com:8091/index.html">Couchbase Admin</a></li>
+                <li><a href="http://rdp.arcaneorb.com:9201/_plugin/head">Elastic Search Head</a></li>
+              </ul>
+            </div>
+          </div>
+        </div><!-- /.navbar -->
+      </div>
+
+
+      {{ if .IsSearch }}
+      <div class="container search">
+        <form action="/results" method="GET">
+          <input type="text" name="q" value="{{.Query}}" placeholder="Use '*' for wildcards" class="searchbox" />
+          <select name="size">
+            <option value="10">10 rows</option>
+            <option value="25">25 rows</option>
+            <option value="50">50 rows</option>
+            <option value="100">100 rows</option>
+          </select>
+          <input type="submit" value="Search, source ES" name="search" class="btn" />
+          <input type="submit" value="Search, source Couchbase" name="search" class="btn" />
+        </form>
+      </div>
+      {{ end }}
+      {{ if .IsHome }}
+      <!-- Jumbotron -->
+      <div class="jumbotron">
+      	<img src="http://webpages.scu.edu/ftp/Mreed/images/wow-logo1.jpg" width="320" />
+        <h1>WoW Item Search</h1>
+        <p class="lead">Below are some examples of various searches for WoW Items.  From using Observe to get CAS values for frequently changing documents, using ElasticSearch to query item properties, and pulling results directly from ElasticSearch without a roundtrip to Couchbase.</p>
+        <a class="btn btn-large btn-success" href="/results?q=Sword">Search for 'Sword'!</a>
+      </div>
+      {{ end }}
+      
+      {{ if .IsCas }}
+        <div class="container cas">
+      	{{ if .HasCacheDoc }}
+        <h2>Doc Found!</h2>
+        <table class="cas">
+          <tr>
+            <th>ID</th>
+            <td>{{.CacheDoc.Id}}</td>
+          </tr>
+          <tr>
+            <th>CAS Value</th>
+            <td>{{.CacheDoc.CasValue}}</td>
+          </tr>
+          <tr>
+            <th>Name</th>
+            <td>{{.CacheDoc.Name}}</td>
+          </tr>
+          <tr>
+            <th>Description</th>
+            <td>{{.CacheDoc.Description}}</td>
+          </tr>
+          <tr>
+            <th>Got from Cache?</th>
+            <td class="cachestatus {{if .CacheDoc.CacheHit}}success{{end}}">{{if .CacheDoc.CacheHit}}Yes!{{else}}No{{end}}</td>
+          </tr>
+        </table>
+        <br/>
+        <a class="btn btn-medium btn-success" href="/cas?id={{.CacheDoc.Id}}">Get Again</a>&nbsp;&nbsp;&nbsp;
+
+        <a class="btn btn-medium btn-warning" href="/cas?id={{.CacheDoc.Id}}&amp;qt=2">Reset Doc</a>&nbsp;&nbsp;&nbsp;
+
+        <a class="btn btn-medium btn-danger" href="http://rdp.arcaneorb.com:8091/index.html#sec=documents&amp;bucketName=wowitems-castest&amp;documentsPageNumber=0&amp;docId=item_{{.CacheDoc.Id}}">Edit Doc</a>
+        {{ else }}
+        <em>No doc found</em>
+
+        <a class="btn btn-medium btn-info" href="/cas?id={{.Id}}&amp;qt=2">Create Doc</a>
+
+        {{end}}
+
+        <br/>
+        <br/>
+        <br/>
+        <pre>
+
+type CacheItem struct {
+  LastCas uint64
+  Doc     *WoWItem
+}
+
+var cache map[string]*CacheItem = make(map[string]*CacheItem)
+
+func GetLocalCache(key string) *WoWItem {
+  o, e := casb.Observe(key) // we're going to do this no matter what
+  if e != nil {
+    return nil
+  }
+  if ci, hit := cache[key]; hit &amp;&amp; ci.LastCas == o.Cas {
+    return ci.Doc
+  }
+
+  var wi WoWItem
+  e = casb.Get(key, &amp;wi)
+  if e != nil {
+    return nil
+  }
+
+  cache[key] = &amp;CacheItem{LastCas: o.Cas, Doc: &amp;wi}
+  return &amp;wi
+}
+        </pre>
+      </div>
+      {{ end }}
+
+      {{if .Query}}
+      <!-- Jumbotron -->
+      <div class="container results">
+        <h1>Search Results</h1>
+        <strong>Took:</strong> {{.SearchResults.Took}}ms<br/>
+        <strong>Total Found:</strong> {{.SearchResults.Hits.Total}}
+
+        <table>
+          <tr class="top">
+            <th>Id</th>
+            <th>Name</th>
+            <th>WoW Head</th>
+            <th width="15%">Description</th>
+          </tr>
+          {{range $row := .WoWItems }}
+            <tr>
+              <td><a href="http://rdp.arcaneorb.com:8091/index.html#sec=documents&amp;bucketName=wowitems&amp;documentsPageNumber=0&amp;docId={{$row.Meta.Id}}">{{$row.Doc.Id}}</a></td>
+              <td>{{$row.Doc.Name}}</td>
+              <td><a rel="item={{$row.Doc.Id}}" href="#">&nbsp;</a></td>
+              <td>{{$row.Doc.Description}}</td>
+            </tr>
+          {{end}}
+        </table>
+
+      </div>
+      {{ end }}
+
+      {{if .IsHome}}
+      <hr>
+      <div class="row-fluid">
+        <div class="span6">
+          <h2>CAS Cache</h2>
+          <p>A sample local cache that uses the CAS value of a document's meta data to know when to get a newer version.  Overall the total operation appears to be extremely inexpensive to perform since Couchbase will store all meta information in RAM.</p>
+          <p><a class="btn" href="/cas">Get Doc &raquo;</a></p>
+        </div>
+        <div class="span6">
+          <h2>ElasticSearch Source</h2>
+          <p>You can use ElasticSearch to store any data you desire from the source document.  Decoupling the index values and the source values can be useful.  But in times when eventual consistent is just fine, modify the ES index template &amp; save yourself a round-trip!</p>
+          <p><a class="btn" href="/results?q=search">Try it Out&raquo;</a></p>
+       </div>
+      </div>
+      {{ end }}
+
+      <hr>
+
+      <div class="footer">
+        <p>Rendered Page in {{.Duration}}&nbsp;-&nbsp;&copy; Mark Kockerbeck 2013</p>
+      </div>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="http://getbootstrap.com/2.3.2/assets/js/jquery.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-transition.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-alert.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-modal.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-dropdown.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-tab.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-tooltip.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-popover.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-button.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-collapse.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-carousel.js"></script>
+    <script src="http://getbootstrap.com/2.3.2/assets/js/bootstrap-typeahead.js"></script>
+
+  </body>
+</html>

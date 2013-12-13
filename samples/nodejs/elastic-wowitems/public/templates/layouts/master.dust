@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>{+title /}</title>
+    <link href="http://getbootstrap.com/2.3.2/assets/css/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/app.css" />
+
+    <!-- Le styles -->
+    <style type="text/css">
+      body {
+        padding-top: 20px;
+        padding-bottom: 60px;
+        background-color: #FFF;
+      }
+
+      /* Custom container */
+      .container {
+        margin: 0 auto;
+        max-width: 1000px;
+      }
+      .container > hr {
+        margin: 60px 0;
+      }
+
+      /* Main marketing message and sign up button */
+      .jumbotron {
+        margin: 0px 0;
+        text-align: center;
+      }
+      .jumbotron h1 {
+        font-size: 50px;
+        line-height: 1;
+      }
+      .jumbotron .lead {
+        font-size: 24px;
+        line-height: 1.25;
+      }
+      .jumbotron .btn {
+        font-size: 21px;
+        padding: 14px 24px;
+      }
+
+      .results table {
+        width:100%;
+        margin-top:20px;
+      }
+      .results table th {
+        text-align: left !important;
+      }
+
+      .results table th, .results table td, .cas table th, .cas table td {
+        vertical-align: top;
+        padding: 15px;
+      }
+      .results tr:nth-child(odd)   { background-color:#666; }
+      .results tr:nth-child(even)    { background-color:#333; }
+      .results tr td, tr th { color: #fff;}
+      .results tr.top { background-color: #000;}
+      
+      .cas tr th { text-align: left !important; color: #666;}
+      .search select { width: 100px;}
+      /* Supporting marketing content */
+      .marketing {
+        margin: 60px 0;
+      }
+      .marketing p + h4 {
+        margin-top: 28px;
+      }
+
+      .search .searchbox, .search select {
+        margin-bottom: 0px !important;
+      }
+
+      .searchbox {
+        width: 480px;
+      }
+
+      .cachestatus { font-weight: bold; }
+      .cachestatus.success { color: #00AA00; }
+
+      /* Customize the navbar links to be fill the entire space of the .navbar */
+      .navbar .navbar-inner {
+        padding: 0;
+      }
+      .navbar .nav {
+        margin: 0;
+        display: table;
+        width: 100%;
+      }
+      .navbar .nav li {
+        display: table-cell;
+        width: 1%;
+        float: none;
+      }
+      .navbar .nav li a {
+        font-weight: bold;
+        text-align: center;
+        border-left: 1px solid rgba(255,255,255,.75);
+        border-right: 1px solid rgba(0,0,0,.1);
+      }
+      .navbar .nav li:first-child a {
+        border-left: 0;
+        border-radius: 3px 0 0 3px;
+      }
+      .navbar .nav li:last-child a {
+        border-right: 0;
+        border-radius: 0 3px 3px 0;
+      }
+    </style>
+    <link href="http://getbootstrap.com/2.3.2/assets/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://getbootstrap.com/2.3.2/assets/js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+    <div class="container">
+
+      <div class="masthead">
+        <h3 class="muted">WoW Items on ElasticSearch</h3>
+        <div class="navbar">
+          <div class="navbar-inner">
+            <div class="container">
+              <ul class="nav">
+                <li><a href="/">Home</a></li>
+                <li><a href="/cluster">Clustering</a></li>
+                <li><a href="/indexing">Indexing</a></li>
+                <li><a href="/results?q=sword">Full Text</a></li>
+                <li><a href="/results?q=sword">Lucene</a></li>
+                <li><a href="http://rdp.arcaneorb.com:9201/_plugin/head">ElasticSearch Head</a></li>
+              </ul>
+            </div>
+          </div>
+        </div><!-- /.navbar -->
+      </div>
+
+      {+body /}
+
+	</div>
+
+<script data-main="js/app" src="components/requirejs/require.js"></script>
+</body>
+</html>

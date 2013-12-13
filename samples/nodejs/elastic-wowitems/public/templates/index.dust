@@ -1,0 +1,27 @@
+{>"layouts/master" /}
+
+{<title}WoWItems on ElasticSearch{/title}
+
+{<body}
+
+	  <!-- Jumbotron -->
+	  <div class="jumbotron">
+	  	<img src="http://webpages.scu.edu/ftp/Mreed/images/wow-logo1.jpg" width="320" />
+	    <h1>WoW Items on <a href="http://www.elasticsearch.com">ElasticSearch</a></h1>
+	    <p class="lead">Below are some examples of various searches for WoW Items.  This site is meant to provide a specific tutorial on ElasticSearch.  Use the navigation above to learn about <a href="/cluster">clustering</a>, <a href="/indexing">indexing</a>, <a href="/results?q=sword">full text</a> and <a href="/results?q=lucene">lucene</a> queries.  Or you can always just...</p>
+	    <a class="btn btn-large btn-success" href="/results?q=Sword">Search for 'Sword'!</a>
+	  </div>
+      <hr>
+      <div class="row-fluid">
+        <div class="span6">
+          <h2>Tech Stack</h2>
+          <p>ElasticSearch, Node.js, Kraken.js, Dust.js, Require.js, Grunt, Adaro, Express, Makara, less, Bootstrap.  It was mostly just <a href="http://krakenjs.com">Kraken.js</a> which installed everything.</p>
+        </div>
+        <div class="span6">
+          <h2>Pure HTTP</h2>
+          <p>ElasticSearch has a pure HTTP interface.  You give it data to index via HTTP requests and you query data via HTTP requests.  All examples contained herein will be represented as: cURL commands, jQuery requests and some using Node's <a href="http://nodejs.org/api/http.html#http_http_request_options_callback">http.request</a> API</p>
+       </div>
+      </div>
+
+    <h1>{@pre type="content" key="index.greeting"/}</h1>
+{/body}
