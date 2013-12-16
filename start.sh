@@ -1,1 +1,2 @@
-nohup go run samples/golang/samples.go 1> log 2> errors &
+cd samples/golang/
+nohup go run samples.go 1> log 2> errors &
